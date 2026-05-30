@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interiora — Indoor Mapping SDK</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--heading:#f0f6fc;--accent:#a78bfa;--accent2:#3fb950;--muted:#8b949e}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:900px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--border);padding:64px 0 40px;text-align:center;background:linear-gradient(180deg,#1a1030 0%,var(--bg) 100%)}
+header h1{font-size:3rem;font-weight:700;background:linear-gradient(135deg,var(--accent),#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+header .tagline{font-size:1.2rem;color:var(--muted);max-width:600px;margin:0 auto}
+.badges{margin-top:20px;display:flex;gap:8px;justify-content:center}
+.badges img{height:24px}
+section{padding:48px 0;border-bottom:1px solid var(--border)}
+h2{font-size:1.5rem;color:var(--heading);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px}
+.card h3{color:var(--heading);font-size:1rem;margin-bottom:8px}
+.card p{font-size:.9rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:.9rem}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--accent);font-weight:600}
+code{background:#1a2030;padding:2px 6px;border-radius:4px;font-size:.85rem}
+pre{background:#1a2030;border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;margin-top:12px}
+footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>🏢 Interiora</h1>
+<p class="tagline">Indoor mapping and navigation SDK — venue modelling, wayfinding, and BLE/WiFi positioning.</p>
+<div class="badges">
+<img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License">
+<img src="https://img.shields.io/badge/Rust-2024_edition-orange.svg" alt="Rust">
+</div>
+</div>
+</header>
+
+<section>
+<div class="container">
+<h2>Features</h2>
+<div class="grid">
+<div class="card"><h3>🏗️ Venue Modelling</h3><p>Venues, floors, units, openings, amenities. 12 unit categories, floor ordinal sorting, anchor coordinates.</p></div>
+<div class="card"><h3>🗺️ Indoor Graph</h3><p>Connectivity graph with typed traversals — walk, elevator, stairs, escalator. Bidirectional edges, nearest-node search.</p></div>
+<div class="card"><h3>🚀 Dijkstra Routing</h3><p>Shortest-path wayfinding with accessibility mode. Wheelchair routing avoids stairs. Turn-by-turn instructions.</p></div>
+<div class="card"><h3>📡 BLE/WiFi Positioning</h3><p>k-NN fingerprint matching for indoor location estimation. Signal-space distance, weighted average, confidence scoring.</p></div>
+<div class="card"><h3>♿ Accessibility</h3><p>Wheelchair-accessible routing avoids stairs and escalators, preferring elevators. First-class accessibility support.</p></div>
+<div class="card"><h3>🏠 Multi-Floor</h3><p>Full multi-floor support with floor changes via elevators, stairs, or escalators. Navigation instructions per segment.</p></div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<h2>Architecture</h2>
+<pre><code>┌─────────────────────────────────────────┐
+│  Venue                                  │
+│  ├── FloorPlan (level, units, openings) │
+│  ├── IndoorGraph (nodes, edges)         │
+│  └── PositioningEngine (fingerprints)   │
+├─────────────────────────────────────────┤
+│  Routing                                │
+│  └── Dijkstra + AccessibilityMode       │
+└─────────────────────────────────────────┘</code></pre>
+</div>
+</section>
+
+<section>
+<div class="container">
+<h2>Quick Start</h2>
+<pre><code>use interiora_core::{
+    IndoorGraph, IndoorNode, NodeKind, TraversalType,
+    routing::{find_route, AccessibilityMode},
+    floor_plan::Point2D,
+};
+
+let mut graph = IndoorGraph::new();
+let entrance = graph.add_node(
+    IndoorNode::new(Point2D::new(0.0, 0.0), 0, NodeKind::Entrance)
+);
+let shop = graph.add_node(
+    IndoorNode::new(Point2D::new(20.0, 5.0), 0, NodeKind::Waypoint)
+);
+graph.add_edge(entrance, shop, TraversalType::Walk);
+
+let route = find_route(&graph, entrance, shop, AccessibilityMode::Default)?;
+println!("Distance: {:.1}m", route.total_distance);</code></pre>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<p>Part of the <a href="https://github.com/GeoLang">GeoLang</a> geospatial platform. AGPL-3.0-or-later.</p>
+</div>
+</footer>
+</body>
+</html>

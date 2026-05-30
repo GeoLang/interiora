@@ -1,6 +1,6 @@
 # Interiora
 
-**Indoor mapping and navigation SDK for the TileTopia ecosystem.**
+**Indoor mapping and navigation SDK for the GeoLang ecosystem.**
 
 Interiora provides data structures and algorithms for indoor venue modelling, wayfinding, and BLE/WiFi fingerprint-based positioning.
 

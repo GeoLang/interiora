@@ -1,5 +1,8 @@
 # Interiora
 
+[![CI](https://github.com/GeoLang/interiora/actions/workflows/ci.yml/badge.svg)](https://github.com/GeoLang/interiora/actions)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+
 **Indoor mapping and navigation SDK for the GeoLang ecosystem.**
 
 Interiora provides data structures and algorithms for indoor venue modelling, wayfinding, and BLE/WiFi fingerprint-based positioning.

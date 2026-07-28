@@ -3,7 +3,7 @@ name = "interiora-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Indoor mapping engine — floor plans, indoor routing, positioning, IMDF support"
+description = "Indoor mapping engine — floor plans, indoor routing, positioning"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

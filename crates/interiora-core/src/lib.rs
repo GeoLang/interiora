@@ -1,7 +1,7 @@
 //! # interiora-core
 //!
 //! Indoor mapping engine — floor plans, indoor graph routing,
-//! BLE/WiFi positioning, and IMDF support.
+//! and BLE/WiFi positioning.
 
 pub mod error;
 pub mod floor_plan;

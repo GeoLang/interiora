@@ -8,6 +8,8 @@ description = "HTTP API over interiora-core — venue catalogue, floor GeoJSON, 
 [dependencies]
 interiora-core = { path = "../interiora-core" }
 axum = "0.8"
+# 9, not 10: 10 pulls rsa 0.9 (RUSTSEC-2023-0071) and fails cargo-deny
+jsonwebtoken = "9"
 tokio = { version = "1", features = ["macros", "net", "rt-multi-thread"] }
 tower-http = { version = "0.7", features = ["cors"] }
 serde = { version = "1", features = ["derive"] }

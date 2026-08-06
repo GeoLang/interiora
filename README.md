@@ -22,6 +22,11 @@ Interiora provides data structures and algorithms for indoor venue modelling, wa
 | `interiora-core` | Core data types, graph, routing, and positioning engine |
 | `interiora-server` | HTTP API: venue catalogue, floor GeoJSON, indoor routing, positioning |
 
+Every `/venues` route needs a platform JWT signed with `PLATFORM_JWT_SECRET`
+(32+ bytes, shared with the other GeoLang services); uploads and deletes need
+the `editor` or `admin` role. `/health` is open, and the server will not start
+without the secret.
+
 ## Quick Start
 
 ```rust

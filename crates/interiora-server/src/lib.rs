@@ -6,7 +6,12 @@
 //!
 //! Venues live in memory. Set `INTERIORA_DATA_DIR` to also load and store them
 //! as JSON documents in that directory.
+//!
+//! Every `/venues` route needs a platform JWT signed with
+//! `PLATFORM_JWT_SECRET`; see [`auth`]. The server refuses to start without
+//! one.
 
+pub mod auth;
 pub mod doc;
 pub mod geo;
 pub mod geojson;
@@ -17,6 +22,7 @@ pub mod venues;
 use std::path::PathBuf;
 
 use axum::http::StatusCode;
+use axum::middleware;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -24,27 +30,40 @@ use serde::Serialize;
 use tower_http::cors::CorsLayer;
 use uuid::Uuid;
 
+pub use auth::AuthConfig;
 pub use store::AppState;
 
-/// Build the router, restoring any documents in `INTERIORA_DATA_DIR`.
+/// Build the router, restoring any documents in `INTERIORA_DATA_DIR` and
+/// gating the venue routes with the secret in `PLATFORM_JWT_SECRET`.
 pub fn create_router() -> std::io::Result<Router> {
+    let auth = AuthConfig::from_env().map_err(std::io::Error::other)?;
     let data_dir = std::env::var_os("INTERIORA_DATA_DIR").map(PathBuf::from);
-    Ok(router(AppState::new(data_dir)?))
+    Ok(router(AppState::new(data_dir)?, auth))
 }
 
-/// Build the router over an explicit state, which is how tests get an isolated
-/// store.
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/health", get(health))
-        .route("/venues", get(venues::list).post(venues::upload))
-        .route("/venues/{id}", axum::routing::delete(venues::delete))
+/// Build the router over an explicit state and signing secret, which is how
+/// tests get an isolated store and a known secret without touching the
+/// environment.
+pub fn router(state: AppState, auth: AuthConfig) -> Router {
+    let reads = Router::new()
+        .route("/venues", get(venues::list))
         .route(
             "/venues/{id}/floors/{ordinal}/geojson",
             get(venues::floor_geojson),
         )
         .route("/venues/{id}/route", post(navigation::route))
-        .route("/venues/{id}/position", post(navigation::position))
+        .route("/venues/{id}/position", post(navigation::position));
+    let writes = Router::new()
+        .route("/venues", post(venues::upload))
+        .route("/venues/{id}", axum::routing::delete(venues::delete))
+        .route_layer(middleware::from_fn(auth::require_write));
+    let gated = reads
+        .merge(writes)
+        .route_layer(middleware::from_fn_with_state(auth, auth::require_auth));
+
+    Router::new()
+        .route("/health", get(health))
+        .merge(gated)
         .layer(CorsLayer::permissive())
         .with_state(state)
 }

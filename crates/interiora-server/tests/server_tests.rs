@@ -1,25 +1,71 @@
 //! End-to-end tests over the router, using the shipped demo venue.
+//!
+//! Every route but `/health` is gated, so the tests build the router with an
+//! explicit secret rather than exporting one into the environment, where
+//! parallel tests would race, and the helpers below sign an admin token with
+//! it. The auth matrix itself is at the bottom of the file.
+
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use axum::Router;
 use axum::body::Body;
+use axum::http::request::Builder;
 use axum::http::{Request, StatusCode};
+use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
 use interiora_core::floor_plan::Point2D;
 use interiora_server::geo::to_lonlat;
-use interiora_server::{AppState, router};
+use interiora_server::{AppState, AuthConfig, router};
 
 const DEMO: &str = include_str!("../../../examples/venue-demo.json");
 const ANCHOR_LAT: f64 = 45.5019;
 const ANCHOR_LON: f64 = -73.5674;
+/// 32+ bytes, the shortest secret [`AuthConfig`] accepts.
+const SECRET: &str = "interiora-test-secret-0123456789";
 
 fn demo_doc() -> Value {
     serde_json::from_str(DEMO).expect("the shipped demo document must parse")
 }
 
 fn fresh() -> Router {
-    router(AppState::new(None).unwrap())
+    gated(AppState::new(None).unwrap())
+}
+
+fn gated(state: AppState) -> Router {
+    router(state, AuthConfig::new(SECRET).unwrap())
+}
+
+/// A platform token: `sub`/`exp`/`role`, signed like tiletopia mints them.
+/// `ttl_s` is relative to now, so a negative value is already expired.
+fn mint(role: &str, ttl_s: i64, secret: &str, alg: Algorithm) -> String {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    let claims = json!({ "sub": "test-user", "exp": now + ttl_s, "role": role });
+    encode(
+        &Header::new(alg),
+        &claims,
+        &EncodingKey::from_secret(secret.as_bytes()),
+    )
+    .unwrap()
+}
+
+/// A live token for `role`, signed HS256 with the router's secret.
+fn token(role: &str) -> String {
+    mint(role, 3600, SECRET, Algorithm::HS256)
+}
+
+/// Request builder carrying an optional bearer token, so the auth tests can
+/// vary the credential the same way a client would.
+fn signed(method: &str, uri: &str, token: Option<&str>) -> Builder {
+    let builder = Request::builder().method(method).uri(uri);
+    match token {
+        Some(token) => builder.header("authorization", format!("Bearer {token}")),
+        None => builder,
+    }
 }
 
 async fn send(app: &Router, request: Request<Body>) -> (StatusCode, Value) {
@@ -37,22 +83,24 @@ async fn send(app: &Router, request: Request<Body>) -> (StatusCode, Value) {
 }
 
 fn get(uri: &str) -> Request<Body> {
-    Request::builder().uri(uri).body(Body::empty()).unwrap()
+    signed("GET", uri, Some(&token("admin")))
+        .body(Body::empty())
+        .unwrap()
 }
 
 fn post(uri: &str, body: &Value) -> Request<Body> {
-    Request::builder()
-        .method("POST")
-        .uri(uri)
+    post_as(uri, body, Some(&token("admin")))
+}
+
+fn post_as(uri: &str, body: &Value, token: Option<&str>) -> Request<Body> {
+    signed("POST", uri, token)
         .header("content-type", "application/json")
         .body(Body::from(serde_json::to_vec(body).unwrap()))
         .unwrap()
 }
 
 fn delete(uri: &str) -> Request<Body> {
-    Request::builder()
-        .method("DELETE")
-        .uri(uri)
+    signed("DELETE", uri, Some(&token("admin")))
         .body(Body::empty())
         .unwrap()
 }
@@ -376,14 +424,195 @@ async fn delete_removes_the_venue() {
 }
 
 #[tokio::test]
+async fn reads_need_a_valid_token() {
+    let app = fresh();
+    let read = |token: Option<&str>| signed("GET", "/venues", token).body(Body::empty()).unwrap();
+
+    for (case, token) in [
+        ("no token", None),
+        ("garbage", Some("not-a-jwt".to_string())),
+        (
+            "expired",
+            Some(mint("viewer", -3600, SECRET, Algorithm::HS256)),
+        ),
+        (
+            "wrong secret",
+            Some(mint(
+                "viewer",
+                3600,
+                "another-platform-secret-0123456789",
+                Algorithm::HS256,
+            )),
+        ),
+        // alg confusion: the right secret, the wrong algorithm
+        (
+            "hs512",
+            Some(mint("viewer", 3600, SECRET, Algorithm::HS512)),
+        ),
+    ] {
+        let (status, _) = send(&app, read(token.as_deref())).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{case}");
+    }
+}
+
+/// Every venue route, so one added outside the gated router fails here.
+#[tokio::test]
+async fn no_venue_route_answers_without_a_token() {
+    let app = fresh();
+    let id = upload_demo(&app).await;
+    let empty = json!({});
+
+    for request in [
+        signed("GET", "/venues", None).body(Body::empty()).unwrap(),
+        signed("GET", &format!("/venues/{id}/floors/0/geojson"), None)
+            .body(Body::empty())
+            .unwrap(),
+        post_as(&format!("/venues/{id}/route"), &empty, None),
+        post_as(&format!("/venues/{id}/position"), &empty, None),
+        post_as("/venues", &demo_doc(), None),
+        signed("DELETE", &format!("/venues/{id}"), None)
+            .body(Body::empty())
+            .unwrap(),
+    ] {
+        let uri = format!("{} {}", request.method(), request.uri());
+        let (status, _) = send(&app, request).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{uri}");
+    }
+}
+
+#[tokio::test]
+async fn a_viewer_reads_but_cannot_mutate() {
+    let app = fresh();
+    let id = upload_demo(&app).await;
+    let viewer = token("viewer");
+
+    let (status, _) = send(
+        &app,
+        signed("GET", "/venues", Some(&viewer))
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let (status, _) = send(
+        &app,
+        signed(
+            "GET",
+            &format!("/venues/{id}/floors/0/geojson"),
+            Some(&viewer),
+        )
+        .body(Body::empty())
+        .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let request = json!({ "from": at(10.0, 0.5, 0), "to": at(29.0, 10.0, 1) });
+    let (status, _) = send(
+        &app,
+        post_as(&format!("/venues/{id}/route"), &request, Some(&viewer)),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let signals = json!({ "signals": { "beacon-lobby": -47.0 } });
+    let (status, _) = send(
+        &app,
+        post_as(&format!("/venues/{id}/position"), &signals, Some(&viewer)),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    let (status, _) = send(&app, post_as("/venues", &demo_doc(), Some(&viewer))).await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
+    let (status, _) = send(
+        &app,
+        signed("DELETE", &format!("/venues/{id}"), Some(&viewer))
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+
+    // the venue is still there, so neither mutation ran
+    let (_, body) = send(&app, get("/venues")).await;
+    assert_eq!(body.as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn an_unknown_role_grants_nothing() {
+    let app = fresh();
+    let id = upload_demo(&app).await;
+
+    for role in ["", "root", "Viewer", "superuser"] {
+        let token = token(role);
+        let (status, _) = send(
+            &app,
+            signed("GET", "/venues", Some(&token))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "read as {role:?}");
+
+        let (status, _) = send(&app, post_as("/venues", &demo_doc(), Some(&token))).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "upload as {role:?}");
+
+        let (status, _) = send(
+            &app,
+            signed("DELETE", &format!("/venues/{id}"), Some(&token))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "delete as {role:?}");
+    }
+}
+
+#[tokio::test]
+async fn an_editor_uploads_and_an_admin_deletes() {
+    let app = fresh();
+
+    let (status, body) = send(
+        &app,
+        post_as("/venues", &demo_doc(), Some(&token("editor"))),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let id = body["id"].as_str().unwrap().to_string();
+
+    let (status, _) = send(
+        &app,
+        signed("DELETE", &format!("/venues/{id}"), Some(&token("admin")))
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+}
+
+#[tokio::test]
+async fn health_stays_public() {
+    let (status, body) = send(
+        &fresh(),
+        signed("GET", "/health", None).body(Body::empty()).unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["status"], "ok");
+}
+
+#[tokio::test]
 async fn a_data_dir_survives_a_restart() {
     let dir = tempfile::tempdir().unwrap();
-    let app = router(AppState::new(Some(dir.path().to_path_buf())).unwrap());
+    let app = gated(AppState::new(Some(dir.path().to_path_buf())).unwrap());
     let id = upload_demo(&app).await;
     assert!(dir.path().join(format!("{id}.json")).exists());
 
     // a second server over the same directory sees the venue and can route on it
-    let restarted = router(AppState::new(Some(dir.path().to_path_buf())).unwrap());
+    let restarted = gated(AppState::new(Some(dir.path().to_path_buf())).unwrap());
     let (_, body) = send(&restarted, get("/venues")).await;
     assert_eq!(body.as_array().unwrap().len(), 1);
     assert_eq!(body[0]["id"], id);

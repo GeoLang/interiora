@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   points with a wheelchair-accessible mode, and estimate a position from BLE
   or WiFi signals. Venues are held in memory and mirrored to
   `INTERIORA_DATA_DIR` when it is set.
+- 2026-08-06: two-stage Dockerfile for `interiora-server`, listening on `PORT`
+  (3000) and persisting venues to the `/data` volume.
 - 2026-08-06: `interiora-server` gates every `/venues` route behind a platform
   JWT (HS256, `sub`/`exp`/`role`) signed with `PLATFORM_JWT_SECRET`. Reads take
   any known role, uploads and deletes take `editor` or `admin`, an unknown role

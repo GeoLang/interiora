@@ -1,0 +1,651 @@
+{
+  "venue": {
+    "id": "817aa02d-6160-406a-a90b-1883b520cedf",
+    "name": "Meridian Centre",
+    "category": "ShoppingMall",
+    "anchor_lat": 45.5019,
+    "anchor_lon": -73.5674,
+    "address": "1200 Rue Sainte-Catherine Ouest, Montreal",
+    "floors": [
+      {
+        "id": "d621e443-7497-40f2-9d0e-74b228d2f896",
+        "level": {
+          "ordinal": 0,
+          "name": "Ground",
+          "short_name": "G"
+        },
+        "units": [
+          {
+            "id": "f3e03f5f-0a59-4f4b-bebe-3fc93b422306",
+            "name": "Lobby",
+            "category": "Lobby",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 0.0
+              },
+              {
+                "x": 20.0,
+                "y": 0.0
+              },
+              {
+                "x": 20.0,
+                "y": 12.0
+              },
+              {
+                "x": 0.0,
+                "y": 12.0
+              }
+            ],
+            "centroid": {
+              "x": 10.0,
+              "y": 6.0
+            }
+          },
+          {
+            "id": "db5060d8-3a1f-4653-8b02-633830451482",
+            "name": "Cafe Nord",
+            "category": "Shop",
+            "geometry": [
+              {
+                "x": 20.0,
+                "y": 0.0
+              },
+              {
+                "x": 32.0,
+                "y": 0.0
+              },
+              {
+                "x": 32.0,
+                "y": 8.0
+              },
+              {
+                "x": 20.0,
+                "y": 8.0
+              }
+            ],
+            "centroid": {
+              "x": 26.0,
+              "y": 4.0
+            }
+          },
+          {
+            "id": "8cdaf175-6608-4c1f-b2dd-b07edf146a08",
+            "name": "North Corridor",
+            "category": "Corridor",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 12.0
+              },
+              {
+                "x": 40.0,
+                "y": 12.0
+              },
+              {
+                "x": 40.0,
+                "y": 16.0
+              },
+              {
+                "x": 0.0,
+                "y": 16.0
+              }
+            ],
+            "centroid": {
+              "x": 20.0,
+              "y": 14.0
+            }
+          },
+          {
+            "id": "c8c1869f-f7e7-4bdd-b30a-c6ae936cd7e0",
+            "name": "Stairwell",
+            "category": "Stairs",
+            "geometry": [
+              {
+                "x": 34.0,
+                "y": 8.0
+              },
+              {
+                "x": 40.0,
+                "y": 8.0
+              },
+              {
+                "x": 40.0,
+                "y": 12.0
+              },
+              {
+                "x": 34.0,
+                "y": 12.0
+              }
+            ],
+            "centroid": {
+              "x": 37.0,
+              "y": 10.0
+            }
+          },
+          {
+            "id": "a4db3a04-ec67-4115-9c3e-e04622cac4b1",
+            "name": "West Elevator",
+            "category": "Elevator",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 16.0
+              },
+              {
+                "x": 6.0,
+                "y": 16.0
+              },
+              {
+                "x": 6.0,
+                "y": 28.0
+              },
+              {
+                "x": 0.0,
+                "y": 28.0
+              }
+            ],
+            "centroid": {
+              "x": 3.0,
+              "y": 22.0
+            }
+          }
+        ],
+        "openings": [
+          {
+            "id": "399b5808-6057-479c-a7b6-67a252a6bff2",
+            "position": {
+              "x": 10.0,
+              "y": 0.0
+            },
+            "kind": "AutomaticDoor",
+            "accessible": true
+          },
+          {
+            "id": "911873b3-9d2a-4572-843b-2ffadda731f8",
+            "position": {
+              "x": 10.0,
+              "y": 12.0
+            },
+            "kind": "Door",
+            "accessible": true
+          },
+          {
+            "id": "53c87ad5-e9be-4046-a5ab-6897fb0a1fce",
+            "position": {
+              "x": 26.0,
+              "y": 8.0
+            },
+            "kind": "Door",
+            "accessible": true
+          }
+        ],
+        "amenities": [
+          {
+            "id": "e4ed9cf9-baac-4c8d-a808-0dd7b99c1f0f",
+            "name": "Main Entrance",
+            "category": "Entrance",
+            "position": {
+              "x": 10.0,
+              "y": 0.0
+            }
+          },
+          {
+            "id": "525c0cb2-bf44-4109-9764-23583269805a",
+            "name": "Information",
+            "category": "InfoDesk",
+            "position": {
+              "x": 6.0,
+              "y": 6.0
+            }
+          },
+          {
+            "id": "ca75fc0e-f162-4240-9589-80a6aab675eb",
+            "name": "Stairwell",
+            "category": "Stairs",
+            "position": {
+              "x": 37.0,
+              "y": 10.0
+            }
+          },
+          {
+            "id": "16570dcf-e10a-4875-9c58-1103ccb88204",
+            "name": "West Elevator",
+            "category": "Elevator",
+            "position": {
+              "x": 2.0,
+              "y": 26.0
+            }
+          }
+        ]
+      },
+      {
+        "id": "a57a7c87-a553-41f7-8a48-bd8d94c2347b",
+        "level": {
+          "ordinal": 1,
+          "name": "Level 1",
+          "short_name": "1F"
+        },
+        "units": [
+          {
+            "id": "003bd58b-6b1f-4bde-992d-a68158edc254",
+            "name": "Food Court",
+            "category": "Lobby",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 0.0
+              },
+              {
+                "x": 24.0,
+                "y": 0.0
+              },
+              {
+                "x": 24.0,
+                "y": 14.0
+              },
+              {
+                "x": 0.0,
+                "y": 14.0
+              }
+            ],
+            "centroid": {
+              "x": 12.0,
+              "y": 7.0
+            }
+          },
+          {
+            "id": "eb9164a7-2e96-4a01-a7b6-60c4ec515c72",
+            "name": "Bookshop",
+            "category": "Shop",
+            "geometry": [
+              {
+                "x": 26.0,
+                "y": 0.0
+              },
+              {
+                "x": 32.0,
+                "y": 0.0
+              },
+              {
+                "x": 32.0,
+                "y": 10.0
+              },
+              {
+                "x": 26.0,
+                "y": 10.0
+              }
+            ],
+            "centroid": {
+              "x": 29.0,
+              "y": 5.0
+            }
+          },
+          {
+            "id": "7d70beaa-013e-46d2-937f-0c007b3f9b0b",
+            "name": "South Corridor",
+            "category": "Corridor",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 14.0
+              },
+              {
+                "x": 40.0,
+                "y": 14.0
+              },
+              {
+                "x": 40.0,
+                "y": 18.0
+              },
+              {
+                "x": 0.0,
+                "y": 18.0
+              }
+            ],
+            "centroid": {
+              "x": 20.0,
+              "y": 16.0
+            }
+          },
+          {
+            "id": "e90295d3-67f1-43e8-9f08-690895733bb6",
+            "name": "Stairwell",
+            "category": "Stairs",
+            "geometry": [
+              {
+                "x": 34.0,
+                "y": 8.0
+              },
+              {
+                "x": 40.0,
+                "y": 8.0
+              },
+              {
+                "x": 40.0,
+                "y": 12.0
+              },
+              {
+                "x": 34.0,
+                "y": 12.0
+              }
+            ],
+            "centroid": {
+              "x": 37.0,
+              "y": 10.0
+            }
+          },
+          {
+            "id": "e2f90bd9-aa0b-46d8-bdd7-f535b682d588",
+            "name": "West Elevator",
+            "category": "Elevator",
+            "geometry": [
+              {
+                "x": 0.0,
+                "y": 18.0
+              },
+              {
+                "x": 6.0,
+                "y": 18.0
+              },
+              {
+                "x": 6.0,
+                "y": 30.0
+              },
+              {
+                "x": 0.0,
+                "y": 30.0
+              }
+            ],
+            "centroid": {
+              "x": 3.0,
+              "y": 24.0
+            }
+          }
+        ],
+        "openings": [
+          {
+            "id": "5e96dac7-a0ce-48c9-abe6-a86630c59c4b",
+            "position": {
+              "x": 12.0,
+              "y": 14.0
+            },
+            "kind": "Door",
+            "accessible": true
+          },
+          {
+            "id": "ab070aaf-0793-4cab-9014-4f24affdf6e5",
+            "position": {
+              "x": 29.0,
+              "y": 10.0
+            },
+            "kind": "Door",
+            "accessible": true
+          }
+        ],
+        "amenities": [
+          {
+            "id": "25f34306-2739-4452-a160-08a95667164d",
+            "name": "Food Court",
+            "category": "FoodCourt",
+            "position": {
+              "x": 12.0,
+              "y": 7.0
+            }
+          },
+          {
+            "id": "7380eb3e-ed41-4eab-a390-d7edaa117fa4",
+            "name": "Restrooms",
+            "category": "Restroom",
+            "position": {
+              "x": 20.0,
+              "y": 16.0
+            }
+          },
+          {
+            "id": "4293af17-2336-43ed-8efb-3a5ae3e0657c",
+            "name": "Stairwell",
+            "category": "Stairs",
+            "position": {
+              "x": 37.0,
+              "y": 11.0
+            }
+          },
+          {
+            "id": "7901aee6-67bd-4478-a736-1503e4d1d12e",
+            "name": "West Elevator",
+            "category": "Elevator",
+            "position": {
+              "x": 3.0,
+              "y": 26.0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "x": 10.0,
+        "y": 0.0,
+        "floor": 0,
+        "kind": "Exit",
+        "label": "Main Entrance"
+      },
+      {
+        "x": 10.0,
+        "y": 6.0,
+        "floor": 0,
+        "kind": "Junction",
+        "label": "Lobby"
+      },
+      {
+        "x": 10.0,
+        "y": 14.0,
+        "floor": 0,
+        "kind": "Waypoint",
+        "label": "North Corridor"
+      },
+      {
+        "x": 30.0,
+        "y": 14.0,
+        "floor": 0,
+        "kind": "Waypoint",
+        "label": "North Corridor East"
+      },
+      {
+        "x": 26.0,
+        "y": 8.0,
+        "floor": 0,
+        "kind": "Entrance",
+        "label": "Cafe Nord"
+      },
+      {
+        "x": 37.0,
+        "y": 10.0,
+        "floor": 0,
+        "kind": "Stairs",
+        "label": "Stairwell"
+      },
+      {
+        "x": 2.0,
+        "y": 26.0,
+        "floor": 0,
+        "kind": "Elevator",
+        "label": "West Elevator"
+      },
+      {
+        "x": 37.0,
+        "y": 11.0,
+        "floor": 1,
+        "kind": "Stairs",
+        "label": "Stairwell"
+      },
+      {
+        "x": 3.0,
+        "y": 26.0,
+        "floor": 1,
+        "kind": "Elevator",
+        "label": "West Elevator"
+      },
+      {
+        "x": 30.0,
+        "y": 16.0,
+        "floor": 1,
+        "kind": "Waypoint",
+        "label": "South Corridor East"
+      },
+      {
+        "x": 12.0,
+        "y": 16.0,
+        "floor": 1,
+        "kind": "Waypoint",
+        "label": "South Corridor"
+      },
+      {
+        "x": 12.0,
+        "y": 14.0,
+        "floor": 1,
+        "kind": "Entrance",
+        "label": "Food Court"
+      },
+      {
+        "x": 29.0,
+        "y": 10.0,
+        "floor": 1,
+        "kind": "Entrance",
+        "label": "Bookshop"
+      }
+    ],
+    "edges": [
+      [
+        0,
+        1,
+        "Walk"
+      ],
+      [
+        1,
+        2,
+        "Walk"
+      ],
+      [
+        2,
+        3,
+        "Walk"
+      ],
+      [
+        3,
+        4,
+        "Walk"
+      ],
+      [
+        3,
+        5,
+        "Walk"
+      ],
+      [
+        2,
+        6,
+        "Walk"
+      ],
+      [
+        5,
+        7,
+        "Stairs"
+      ],
+      [
+        6,
+        8,
+        "Elevator"
+      ],
+      [
+        7,
+        9,
+        "Walk"
+      ],
+      [
+        9,
+        10,
+        "Walk"
+      ],
+      [
+        10,
+        11,
+        "Walk"
+      ],
+      [
+        9,
+        12,
+        "Walk"
+      ],
+      [
+        8,
+        10,
+        "Walk"
+      ]
+    ]
+  },
+  "fingerprints": [
+    {
+      "position": {
+        "x": 10.0,
+        "y": 6.0
+      },
+      "floor_ordinal": 0,
+      "signals": {
+        "beacon-lobby": -45.0,
+        "beacon-east": -72.0,
+        "beacon-upper": -85.0
+      }
+    },
+    {
+      "position": {
+        "x": 30.0,
+        "y": 14.0
+      },
+      "floor_ordinal": 0,
+      "signals": {
+        "beacon-lobby": -80.0,
+        "beacon-east": -50.0,
+        "beacon-upper": -70.0
+      }
+    },
+    {
+      "position": {
+        "x": 2.0,
+        "y": 26.0
+      },
+      "floor_ordinal": 0,
+      "signals": {
+        "beacon-lobby": -88.0,
+        "beacon-east": -75.0,
+        "beacon-upper": -60.0
+      }
+    },
+    {
+      "position": {
+        "x": 12.0,
+        "y": 7.0
+      },
+      "floor_ordinal": 1,
+      "signals": {
+        "beacon-lobby": -90.0,
+        "beacon-east": -86.0,
+        "beacon-upper": -48.0
+      }
+    },
+    {
+      "position": {
+        "x": 30.0,
+        "y": 16.0
+      },
+      "floor_ordinal": 1,
+      "signals": {
+        "beacon-lobby": -84.0,
+        "beacon-east": -62.0,
+        "beacon-upper": -55.0
+      }
+    }
+  ]
+}

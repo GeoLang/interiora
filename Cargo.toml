@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/interiora-core"]
+members = ["crates/interiora-core", "crates/interiora-server"]
 
 [workspace.package]
 version = "0.1.0"

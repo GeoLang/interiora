@@ -20,6 +20,7 @@ Interiora provides data structures and algorithms for indoor venue modelling, wa
 | Crate | Description |
 |-------|-------------|
 | `interiora-core` | Core data types, graph, routing, and positioning engine |
+| `interiora-server` | HTTP API: venue catalogue, floor GeoJSON, indoor routing, positioning |
 
 ## Quick Start
 

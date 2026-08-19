@@ -33,7 +33,7 @@ footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
 <header>
 <div class="container">
 <h1>🏢 Interiora</h1>
-<p class="tagline">Indoor mapping and navigation SDK — venue modelling, wayfinding, and BLE/WiFi positioning.</p>
+<p class="tagline">Indoor mapping and navigation SDK — venue modelling, wayfinding, and fingerprint positioning over caller-supplied signal readings.</p>
 <div class="badges">
 <img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License">
 <img src="https://img.shields.io/badge/Rust-2024_edition-orange.svg" alt="Rust">
@@ -47,11 +47,18 @@ footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
 <div class="grid">
 <div class="card"><h3>🏗️ Venue Modelling</h3><p>Venues, floors, units, openings, amenities. 12 unit categories, floor ordinal sorting, anchor coordinates.</p></div>
 <div class="card"><h3>🗺️ Indoor Graph</h3><p>Connectivity graph with typed traversals — walk, elevator, stairs, escalator. Bidirectional edges, nearest-node search.</p></div>
-<div class="card"><h3>🚀 Dijkstra Routing</h3><p>Shortest-path wayfinding with accessibility mode. Wheelchair routing avoids stairs. Turn-by-turn instructions.</p></div>
-<div class="card"><h3>📡 BLE/WiFi Positioning</h3><p>k-NN fingerprint matching for indoor location estimation. Signal-space distance, weighted average, confidence scoring.</p></div>
-<div class="card"><h3>♿ Accessibility</h3><p>Wheelchair-accessible routing avoids stairs and escalators, preferring elevators. First-class accessibility support.</p></div>
+<div class="card"><h3>🚀 Dijkstra Routing</h3><p>Shortest-path wayfinding with accessibility mode. One instruction per segment, without bearings or left/right turns.</p></div>
+<div class="card"><h3>📡 Fingerprint Positioning</h3><p>k-NN matching over a caller-supplied map of signal identifier to RSSI, with no BLE or WiFi code of its own. The reported accuracy is the spread of the chosen survey points, not a validated error bound, and confidence is an unlabelled 0-1 curve.</p></div>
+<div class="card"><h3>♿ Accessibility</h3><p>Wheelchair routing skips stairs and escalators over the HTTP server, whose loader marks those edges inaccessible. <code>interiora-core</code> on its own marks every edge accessible.</p></div>
 <div class="card"><h3>🏠 Multi-Floor</h3><p>Full multi-floor support with floor changes via elevators, stairs, or escalators. Navigation instructions per segment.</p></div>
 </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<h2>Limits</h2>
+<p>Floor GeoJSON carries no rotation term, so a plan drawn on a rotated axis comes out rotated on the map.</p>
 </div>
 </section>
 
@@ -60,9 +67,12 @@ footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
 <h2>Architecture</h2>
 <pre><code>┌─────────────────────────────────────────┐
 │  Venue                                  │
-│  ├── FloorPlan (level, units, openings) │
-│  ├── IndoorGraph (nodes, edges)         │
-│  └── PositioningEngine (fingerprints)   │
+│  └── FloorPlan (level, units, openings) │
+├─────────────────────────────────────────┤
+│  IndoorGraph (nodes, edges)             │
+│  PositioningEngine (fingerprints)       │
+│  (separate objects, assembled by the    │
+│   server alongside the venue)           │
 ├─────────────────────────────────────────┤
 │  Routing                                │
 │  └── Dijkstra + AccessibilityMode       │
@@ -74,7 +84,8 @@ footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
 <div class="container">
 <h2>Quick Start</h2>
 <pre><code>use interiora_core::{
-    IndoorGraph, IndoorNode, NodeKind, TraversalType,
+    IndoorGraph, IndoorNode,
+    graph::{NodeKind, TraversalType},
     routing::{find_route, AccessibilityMode},
     floor_plan::Point2D,
 };

@@ -1,7 +1,8 @@
 //! # interiora-core
 //!
-//! Indoor mapping engine — floor plans, indoor graph routing,
-//! and BLE/WiFi positioning.
+//! Indoor mapping engine: floor plans, indoor graph routing, and k-nearest-neighbor
+//! fingerprint positioning over signals the caller supplies. There is no BLE or WiFi
+//! acquisition here.
 
 pub mod error;
 pub mod floor_plan;

@@ -64,6 +64,24 @@ footer{padding:32px 0;text-align:center;color:var(--muted);font-size:.85rem}
 
 <section>
 <div class="container">
+<h2>HTTP API</h2>
+<p>The <code>interiora-server</code> crate serves the core over HTTP. A client posts one document per venue, containing the venue, an optional navigation graph, and optional fingerprints, then reads floors, routes, and positions back out of it. Graph edges in the document are index pairs into its own node list. The repository carries a ready document at <code>examples/venue-demo.json</code>.</p>
+<table>
+<tr><th>Route</th><th>Role</th><th>Returns</th></tr>
+<tr><td><code>GET /health</code></td><td>open</td><td>Status and crate version.</td></tr>
+<tr><td><code>GET /venues</code></td><td>any known role</td><td>Venue summaries sorted by name, each with its floor ordinals.</td></tr>
+<tr><td><code>POST /venues</code></td><td>editor or admin</td><td>The id of the stored venue.</td></tr>
+<tr><td><code>DELETE /venues/{id}</code></td><td>editor or admin</td><td>No content.</td></tr>
+<tr><td><code>GET /venues/{id}/floors/{ordinal}/geojson</code></td><td>any known role</td><td>A GeoJSON FeatureCollection in lon/lat holding the floor's units, openings, and amenities.</td></tr>
+<tr><td><code>POST /venues/{id}/route</code></td><td>any known role</td><td>A LineString, distance, walk time, per-segment instructions, and the floor of every vertex. Endpoints are <code>{lon, lat, floor}</code> and <code>mode</code> is <code>default</code> or <code>accessible</code>.</td></tr>
+<tr><td><code>POST /venues/{id}/position</code></td><td>any known role</td><td>Local position, floor, accuracy, confidence, and lon/lat, from a <code>signals</code> map of identifier to RSSI.</td></tr>
+</table>
+<p>Floor coordinates are metres on a tangent plane at the venue anchor, with <code>+x</code> east and <code>+y</code> north. Every route except <code>/health</code> needs a platform JWT signed with the 32-byte-or-longer secret in <code>PLATFORM_JWT_SECRET</code>, and the server refuses to start without it. <code>PORT</code> sets the listen port, 3000 by default. Setting <code>INTERIORA_DATA_DIR</code> mirrors venues to that directory as JSON and reloads them at startup, otherwise they only live in memory.</p>
+</div>
+</section>
+
+<section>
+<div class="container">
 <h2>Architecture</h2>
 <pre><code>┌─────────────────────────────────────────┐
 │  Venue                                  │

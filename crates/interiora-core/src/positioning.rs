@@ -1,4 +1,5 @@
-//! Indoor positioning — BLE/WiFi fingerprint-based location estimation.
+//! Indoor positioning: k-nearest-neighbor location estimation over signal
+//! strength readings the caller supplies. There is no BLE or WiFi acquisition here.
 
 use std::collections::HashMap;
 
@@ -19,7 +20,8 @@ pub struct IndoorPosition {
     pub confidence: f64,
 }
 
-/// A radio signal fingerprint (BLE beacon or WiFi AP).
+/// Signal strength readings recorded at a known position. The identifiers and
+/// their dBm values come from the caller.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fingerprint {
     /// Known position where this fingerprint was recorded.

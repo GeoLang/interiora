@@ -40,6 +40,36 @@ Every `/venues` route needs a platform JWT signed with `PLATFORM_JWT_SECRET`
 the `editor` or `admin` role. `/health` is open, and the server will not start
 without the secret.
 
+## HTTP API
+
+`interiora-server` takes one upload document per venue, an `IndoorMapDoc`
+holding the venue, an optional navigation graph whose edges are index pairs
+into its node list, and optional fingerprints. `examples/venue-demo.json` is a
+complete document you can post as is.
+
+| Route | Role | What it does |
+|-------|------|--------------|
+| `GET /health` | open | status and crate version |
+| `GET /venues` | any known role | venue summaries sorted by name, with floor ordinals |
+| `POST /venues` | editor or admin | store an upload document, returns its venue id |
+| `DELETE /venues/{id}` | editor or admin | drop a venue |
+| `GET /venues/{id}/floors/{ordinal}/geojson` | any known role | the floor as a GeoJSON FeatureCollection in lon/lat, with unit, opening, and amenity features |
+| `POST /venues/{id}/route` | any known role | route between two `{lon, lat, floor}` points, `mode` of `default` or `accessible` |
+| `POST /venues/{id}/position` | any known role | estimate a position from a `signals` map of identifier to RSSI |
+
+Local floor metres are placed on a tangent plane at the venue anchor, `+x` east
+and `+y` north.
+
+Environment:
+
+- `PLATFORM_JWT_SECRET`: required, the shared HS256 secret.
+- `PORT`: listen port, 3000 by default.
+- `INTERIORA_DATA_DIR`: when set, venues are mirrored to that directory as JSON
+  documents and reloaded at startup. Without it they are held in memory only.
+
+The Dockerfile builds `interiora-server`, exposes port 3000, and points
+`INTERIORA_DATA_DIR` at the `/data` volume.
+
 ## Quick Start
 
 ```rust

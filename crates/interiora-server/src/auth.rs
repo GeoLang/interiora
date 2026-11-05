@@ -9,30 +9,18 @@
 
 use std::sync::Arc;
 
-use axum::Json;
 use axum::extract::{Request, State};
-use axum::http::{StatusCode, header};
+use axum::http::StatusCode;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
-use axum::{Extension, http::HeaderMap};
-use jsonwebtoken::{DecodingKey, Validation, decode};
-use serde::{Deserialize, Serialize};
+use axum::{Extension, Json};
+use platform_auth::TokenAuthority;
 
 /// Env var holding the shared HS256 secret.
 pub const SECRET_ENV: &str = "PLATFORM_JWT_SECRET";
 
 /// Shortest HS256 secret we accept, matching tiletopia, collecta and ptolemy.
 pub const MIN_SECRET_LEN: usize = 32;
-
-/// JWT claims. `exp` is required and checked by [`Validation`].
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-    /// Role name. Read it through [`Role::parse`], never by comparing the
-    /// string, so an unknown role is refused instead of landing in a tier.
-    pub role: String,
-}
 
 /// What a caller may do. Copied from the `role` claim.
 ///
@@ -115,37 +103,30 @@ fn deny(status: StatusCode, message: &str) -> Response {
     (status, Json(serde_json::json!({ "error": message }))).into_response()
 }
 
-fn bearer_token(headers: &HeaderMap) -> Option<&str> {
-    headers
-        .get(header::AUTHORIZATION)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.strip_prefix("Bearer "))
-        .filter(|t| !t.is_empty())
-}
-
 /// Require a valid platform token carrying a role we know, and expose the
 /// [`Caller`] to the handlers and to [`require_write`].
 ///
-/// `Validation::default()` pins HS256 and requires `exp`, so a token signed
-/// with another algorithm, an `alg: none` header, an expired token and a
-/// wrong-secret signature all fail here.
+/// [`platform_auth::verify_token`] pins HS256 and requires `exp`, so a token
+/// signed with another algorithm, an `alg: none` header, an expired token and
+/// a wrong-secret signature all fail here.
 pub async fn require_auth(
     State(config): State<AuthConfig>,
     mut request: Request,
     next: Next,
 ) -> Response {
-    let Some(token) = bearer_token(request.headers()) else {
+    let Some(token) = platform_auth::bearer_token(request.headers()) else {
         return deny(StatusCode::UNAUTHORIZED, "missing bearer token");
     };
 
-    // the decode error is not echoed back: it separates "expired" from "bad
-    // signature", which helps an attacker more than a caller
-    let key = DecodingKey::from_secret(config.secret.as_bytes());
-    let Ok(data) = decode::<Claims>(token, &key, &Validation::default()) else {
+    let Ok(verified) = platform_auth::verify_token(token, &config.secret) else {
         return deny(StatusCode::UNAUTHORIZED, "invalid or expired token");
     };
 
-    let Some(role) = Role::parse(&data.claims.role) else {
+    let TokenAuthority::Platform { role: Some(role) } = verified.authority else {
+        return deny(StatusCode::UNAUTHORIZED, "invalid or expired token");
+    };
+
+    let Some(role) = Role::parse(&role) else {
         return deny(StatusCode::FORBIDDEN, "unknown role");
     };
 

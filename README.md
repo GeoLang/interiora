@@ -38,8 +38,9 @@ Interiora models indoor venues, routes between points inside them, and estimates
 Every `/venues` route needs a platform JWT signed HS256 with `PLATFORM_JWT_SECRET`
 (32 bytes or more, shared with the other GeoLang services). The token's `role`
 claim must be `viewer`, `editor` or `admin`, and uploads and deletes need
-`editor` or `admin`. `/health` is open. The server will not start without the
-secret.
+`editor` or `admin`. A token carrying `aud`, `token_use`, `agora_use` or
+`geolang_use` gets 401, even with a null value. `/health` is open. The server
+will not start without the secret.
 
 ## HTTP API
 

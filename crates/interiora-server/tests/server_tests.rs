@@ -58,6 +58,23 @@ fn token(role: &str) -> String {
     mint(role, 3600, SECRET, Algorithm::HS256)
 }
 
+fn live_expiry() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        + 3600
+}
+
+fn signed_claims(claims: &Value) -> String {
+    encode(
+        &Header::default(),
+        claims,
+        &EncodingKey::from_secret(SECRET.as_bytes()),
+    )
+    .unwrap()
+}
+
 /// Request builder carrying an optional bearer token, so the auth tests can
 /// vary the credential the same way a client would.
 fn signed(method: &str, uri: &str, token: Option<&str>) -> Builder {
@@ -591,6 +608,78 @@ async fn an_editor_uploads_and_an_admin_deletes() {
     )
     .await;
     assert_eq!(status, StatusCode::NO_CONTENT);
+}
+
+#[tokio::test]
+async fn a_role_token_carrying_a_scope_marker_gets_401() {
+    let app = fresh();
+    let read = |token: &str| {
+        signed("GET", "/venues", Some(token))
+            .body(Body::empty())
+            .unwrap()
+    };
+
+    let unmarked = signed_claims(&json!({
+        "sub": "test-user", "exp": live_expiry(), "role": "admin", "team": "survey"
+    }));
+    let (status, _) = send(&app, read(&unmarked)).await;
+    assert_eq!(status, StatusCode::OK);
+
+    for marker in ["token_use", "agora_use", "geolang_use"] {
+        for value in [
+            json!(null),
+            json!("tool"),
+            json!("feed"),
+            json!("mcp"),
+            json!(1),
+        ] {
+            let token = signed_claims(&json!({
+                "sub": "test-user", "exp": live_expiry(), "role": "admin", marker: value
+            }));
+            let (status, _) = send(&app, read(&token)).await;
+            assert_eq!(status, StatusCode::UNAUTHORIZED, "{marker}: {value}");
+        }
+    }
+}
+
+#[tokio::test]
+async fn a_token_with_no_role_or_a_malformed_claim_gets_401() {
+    let app = fresh();
+    let exp = live_expiry();
+
+    for (case, claims) in [
+        ("no role", json!({"sub": "test-user", "exp": exp})),
+        (
+            "null role",
+            json!({"sub": "test-user", "exp": exp, "role": null}),
+        ),
+        (
+            "tool token",
+            json!({"sub": "test-user", "exp": exp, "token_use": "tool", "scope": ["interiora:read"]}),
+        ),
+        (
+            "empty subject",
+            json!({"sub": "", "exp": exp, "role": "admin"}),
+        ),
+        (
+            "non-string name",
+            json!({"sub": "test-user", "exp": exp, "role": "admin", "name": 7}),
+        ),
+        (
+            "non-string aud",
+            json!({"sub": "test-user", "exp": exp, "role": "admin", "aud": 7}),
+        ),
+    ] {
+        let token = signed_claims(&claims);
+        let (status, _) = send(
+            &app,
+            signed("GET", "/venues", Some(&token))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED, "{case}");
+    }
 }
 
 #[tokio::test]

@@ -17,6 +17,6 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 # aws_lc_rs, not rust_crypto: rust_crypto pulls rsa 0.9 (RUSTSEC-2023-0071)
-jsonwebtoken = { version = "11", default-features = false, features = ["aws_lc_rs"] }
+jsonwebtoken = { version = "12", default-features = false, features = ["aws_lc_rs"] }
 tempfile = "3"
 tower = { version = "0.5", features = ["util"] }
